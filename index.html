@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Método BIC — Paula Andrea González</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500&family=Caveat:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F9F4EC;
+    --cream2: #F0E8D8;
+    --brown-dark: #1E1409;
+    --brown-mid: #4A3520;
+    --brown-light: #8C6A4A;
+    --olive: #4E5E30;
+    --olive-light: #7A8C55;
+    --olive-pale: #D8E0C4;
+    --terra: #C05A30;
+    --terra-light: #E8896A;
+    --terra-pale: #F5DACE;
+    --gold: #C99840;
+    --gold-pale: #F2E4B8;
+    --blue-deep: #2C4A6E;
+    --blue-pale: #D0DFF0;
+    --rose: #9E3E5A;
+    --rose-pale: #F2D5DF;
+    --ink: #2A1F0E;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: var(--cream);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 40px;
+    background: rgba(249,244,236,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(74,53,32,0.12);
+  }
+  .nav-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--brown-mid);
+    letter-spacing: 0.02em;
+  }
+  .nav-links {
+    display: flex;
+    gap: 6px;
+    list-style: none;
+  }
+  .nav-links a {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--brown-light);
+    text-decoration: none;
+    padding: 5px 12px;
+    border-radius: 20px;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  .nav-links a:hover,
+  .nav-links a.active {
+    background: var(--olive);
+    color: var(--cream);
+    border-color: var(--olive);
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 120px 40px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 80%, rgba(200,152,64,0.15) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 80% 20%, rgba(78,94,48,0.12) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 50% 50%, rgba(192,90,48,0.08) 0%, transparent 60%);
+  }
+  .hero-deco {
+    position: absolute;
+    font-family: 'Caveat', cursive;
+    color: rgba(74,53,32,0.08);
+    font-size: 200px;
+    font-weight: 600;
+    user-select: none;
+    top: 10%;
+    left: -2%;
+    line-height: 1;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--terra);
+    margin-bottom: 20px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .hero-eyebrow::before, .hero-eyebrow::after {
+    content: '';
+    width: 40px; height: 1px;
+    background: var(--terra-light);
+  }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(56px, 9vw, 110px);
+    font-weight: 900;
+    line-height: 0.95;
+    color: var(--brown-dark);
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--terra);
+  }
+  .hero-subtitle {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(18px, 2.5vw, 26px);
+    font-weight: 400;
+    font-style: italic;
+    color: var(--brown-light);
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 48px;
+  }
+  .hero-badge {
+    font-size: 12px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 500;
+    border: 1px solid;
+  }
+  .badge-olive { background: var(--olive-pale); color: var(--olive); border-color: var(--olive-light); }
+  .badge-terra { background: var(--terra-pale); color: var(--terra); border-color: var(--terra-light); }
+  .badge-gold { background: var(--gold-pale); color: var(--gold); border-color: var(--gold); }
+  .hero-scroll {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--brown-light);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation: bounce 2s infinite;
+  }
+  .hero-scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--brown-light), transparent);
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(6px); }
+  }
+
+  /* PHASE SECTIONS */
+  section {
+    padding: 100px 0;
+    position: relative;
+  }
+  .phase-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .phase-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    max-width: 60px;
+    background: currentColor;
+    opacity: 0.4;
+  }
+  .phase-num {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    margin-right: 4px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(36px, 5vw, 58px);
+    font-weight: 900;
+    line-height: 1.05;
+    margin-bottom: 16px;
+  }
+  .section-intro {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--brown-light);
+    max-width: 520px;
+    margin-bottom: 48px;
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  /* PHASE 1 - SENSIBILIZACIÓN */
+  #fase1 { background: var(--cream); }
+  .bitacora-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .bit-card {
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    border-left: 4px solid;
+    position: relative;
+    overflow: hidden;
+  }
+  .bit-card::before {
+    content: attr(data-letter);
+    position: absolute;
+    right: 16px; top: 16px;
+    font-family: 'Playfair Display', serif;
+    font-size: 80px;
+    font-weight: 900;
+    opacity: 0.06;
+    line-height: 1;
+    color: var(--brown-dark);
+  }
+  .bit-card.datos { border-color: var(--blue-deep); }
+  .bit-card.anec { border-color: var(--gold); }
+  .bit-card.reflex { border-color: var(--olive); }
+  .bit-card.emos { border-color: var(--rose); }
+  .bit-card-title {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .bit-card.datos .bit-card-title { color: var(--blue-deep); }
+  .bit-card.anec .bit-card-title { color: var(--gold); }
+  .bit-card.reflex .bit-card-title { color: var(--olive); }
+  .bit-card.emos .bit-card-title { color: var(--rose); }
+  .bit-item {
+    font-size: 13px;
+    color: var(--brown-mid);
+    padding: 7px 0;
+    border-bottom: 1px solid var(--cream2);
+    line-height: 1.4;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .bit-item::before { content: '—'; opacity: 0.3; flex-shrink: 0; }
+  .bit-item:last-child { border-bottom: none; }
+  .handwritten {
+    font-family: 'Caveat', cursive;
+    font-size: 15px;
+    color: var(--brown-mid);
+  }
+
+  /* PHASE 2 - BDARE */
+  #fase2 { background: var(--brown-dark); color: var(--cream); }
+  #fase2 .section-title { color: var(--cream); }
+  #fase2 .section-intro { color: rgba(249,244,236,0.6); }
+  #fase2 .phase-label { color: var(--gold); }
+  .bdare-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .bdare-col {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 24px 20px;
+  }
+  .bdare-col-title {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+  }
+  .bdare-col.d .bdare-col-title { color: #90B8E8; }
+  .bdare-col.a .bdare-col-title { color: var(--gold); }
+  .bdare-col.r .bdare-col-title { color: var(--olive-light); }
+  .bdare-col.e .bdare-col-title { color: #E89AB8; }
+  .word-chip-dark {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    line-height: 1.2;
+  }
+  .word-chip-dark:last-child { border-bottom: none; }
+  .bdare-col.d .word-chip-dark { color: #C8DCF5; }
+  .bdare-col.a .word-chip-dark { color: var(--gold-pale); }
+  .bdare-col.r .word-chip-dark { color: var(--olive-pale); }
+  .bdare-col.e .word-chip-dark { color: #F2D5DF; }
+  .total-words {
+    text-align: center;
+    margin-top: 40px;
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    font-style: italic;
+    color: rgba(249,244,236,0.4);
+  }
+  .total-words span {
+    font-size: 48px;
+    font-weight: 900;
+    display: block;
+    color: rgba(249,244,236,0.15);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  /* PHASE 3 - PROBLEMA */
+  #fase3 {
+    background: var(--terra);
+    color: white;
+    text-align: center;
+  }
+  #fase3 .section-title { color: white; }
+  #fase3 .section-intro { color: rgba(255,255,255,0.75); margin: 0 auto 48px; }
+  #fase3 .phase-label { color: rgba(255,255,255,0.7); justify-content: center; }
+  #fase3 .phase-label::after, #fase3 .phase-label::before {
+    content: '';
+    width: 40px; height: 1px;
+    background: rgba(255,255,255,0.4);
+  }
+  .problema-box {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px;
+    padding: 48px 60px;
+    max-width: 760px;
+    margin: 0 auto;
+    backdrop-filter: blur(4px);
+  }
+  .problema-question {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(22px, 3.5vw, 34px);
+    font-weight: 700;
+    line-height: 1.3;
+    color: white;
+    margin-bottom: 24px;
+  }
+  .problema-question em { font-style: italic; opacity: 0.85; }
+  .problema-desc {
+    font-size: 14px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.75);
+  }
+
+  /* PHASE 4 - 3P */
+  #fase4 { background: var(--cream2); }
+  .props-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .prop-card {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .prop-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(30,20,9,0.1);
+  }
+  .prop-num {
+    position: absolute;
+    top: 16px; right: 16px;
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 900;
+    opacity: 0.06;
+    line-height: 1;
+  }
+  .prop-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+  }
+  .tag-d { background: var(--blue-pale); color: var(--blue-deep); }
+  .tag-a { background: var(--gold-pale); color: var(--gold); }
+  .tag-r { background: var(--olive-pale); color: var(--olive); }
+  .tag-e { background: var(--rose-pale); color: var(--rose); }
+  .prop-word {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--brown-dark);
+    margin-bottom: 6px;
+  }
+  .prop-desc {
+    font-size: 12.5px;
+    color: var(--brown-light);
+    line-height: 1.55;
+  }
+
+  /* PHASE 5 - CUVA */
+  #fase5 { background: var(--cream); }
+  .cuva-wrap { overflow-x: auto; }
+  table.cuva {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 4px;
+    font-size: 13px;
+  }
+  table.cuva thead th {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--brown-light);
+    padding: 8px 12px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  table.cuva thead th:first-child { text-align: left; }
+  table.cuva tbody tr {
+    background: white;
+    transition: background 0.15s;
+  }
+  table.cuva tbody tr:hover { background: var(--cream2); }
+  table.cuva tbody tr.winner { background: linear-gradient(90deg, #F9F0E0 0%, white 100%); }
+  table.cuva tbody tr.runner { background: linear-gradient(90deg, #EAF1DC 0%, white 100%); }
+  table.cuva td {
+    padding: 12px;
+    border-top: 1px solid var(--cream2);
+    border-bottom: 1px solid var(--cream2);
+    text-align: center;
+    color: var(--brown-mid);
+  }
+  table.cuva td:first-child {
+    text-align: left;
+    border-left: 1px solid var(--cream2);
+    border-radius: 10px 0 0 10px;
+    padding-left: 16px;
+    font-weight: 500;
+    color: var(--brown-dark);
+    white-space: nowrap;
+  }
+  table.cuva td:last-child {
+    border-right: 1px solid var(--cream2);
+    border-radius: 0 10px 10px 0;
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  table.cuva tbody tr.winner td:last-child { color: var(--terra); }
+  table.cuva tbody tr.runner td:last-child { color: var(--olive); }
+  .place-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-left: 6px;
+  }
+  .place-1 { background: var(--terra-pale); color: var(--terra); }
+  .place-2 { background: var(--olive-pale); color: var(--olive); }
+  .cuva-legend {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .cuva-legend-item {
+    font-size: 12px;
+    color: var(--brown-light);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  /* PHASE 6 - SELECCIÓN */
+  #fase6 { background: var(--olive); color: white; }
+  #fase6 .section-title { color: white; }
+  #fase6 .section-intro { color: rgba(255,255,255,0.7); }
+  #fase6 .phase-label { color: rgba(255,255,255,0.6); }
+  .ideas-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  .idea-card {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    padding: 32px;
+  }
+  .idea-card.first { border-color: var(--gold); background: rgba(201,152,64,0.15); }
+  .idea-score {
+    font-family: 'Playfair Display', serif;
+    font-size: 56px;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 8px;
+    opacity: 0.9;
+  }
+  .idea-card.first .idea-score { color: var(--gold); }
+  .idea-card:not(.first) .idea-score { color: var(--olive-pale); }
+  .idea-rank {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 16px;
+  }
+  .idea-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .idea-desc {
+    font-size: 13px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.7);
+  }
+  .fusion-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    padding: 32px;
+    display: flex;
+    gap: 32px;
+    align-items: center;
+  }
+  .fusion-icon {
+    font-size: 48px;
+    flex-shrink: 0;
+  }
+  .fusion-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 8px;
+  }
+  .fusion-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .fusion-desc {
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.6;
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--brown-dark);
+    color: rgba(249,244,236,0.5);
+    text-align: center;
+    padding: 40px;
+    font-size: 13px;
+    line-height: 2;
+  }
+  footer strong { color: rgba(249,244,236,0.85); font-weight: 500; }
+
+  /* DIVIDERS */
+  .divider-wave {
+    height: 60px;
+    overflow: hidden;
+    line-height: 0;
+  }
+  .divider-wave svg { display: block; width: 100%; height: 100%; }
+
+  /* REVEAL ANIMATIONS */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  @media (max-width: 768px) {
+    nav { padding: 12px 16px; }
+    .nav-links { display: none; }
+    .container { padding: 0 20px; }
+    .bitacora-grid { grid-template-columns: 1fr; }
+    .bdare-grid { grid-template-columns: 1fr 1fr; }
+    .props-grid { grid-template-columns: 1fr 1fr; }
+    .ideas-grid { grid-template-columns: 1fr; }
+    .fusion-card { flex-direction: column; gap: 16px; }
+    .problema-box { padding: 32px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">Método BIC</div>
+  <ul class="nav-links">
+    <li><a href="#fase1">Bitácora</a></li>
+    <li><a href="#fase2">B-DARE</a></li>
+    <li><a href="#fase3">Problema</a></li>
+    <li><a href="#fase4">Ideación</a></li>
+    <li><a href="#fase5">CUVA-Free</a></li>
+    <li><a href="#fase6">Selección</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-deco">BIC</div>
+  <div class="hero-eyebrow">Banco de Ideas Creativas</div>
+  <h1 class="hero-title">Método<br><em>BIC</em></h1>
+  <p class="hero-subtitle">Parque Kombai — Una aventura que inspiró ideas</p>
+  <div class="hero-meta">
+    <span class="hero-badge badge-olive">Paula Andrea González</span>
+    <span class="hero-badge badge-terra">6 fases</span>
+    <span class="hero-badge badge-gold">12 propuestas creativas</span>
+  </div>
+  <div class="hero-scroll">
+    <div class="hero-scroll-line"></div>
+    Explorar
+  </div>
+</section>
+
+<!-- FASE 1 -->
+<section id="fase1">
+  <div class="container">
+    <div class="reveal phase-label" style="color:var(--blue-deep);">
+      <span class="phase-num" style="background:var(--blue-pale);color:var(--blue-deep);">1</span>
+      Sensibilización
+    </div>
+    <h2 class="reveal section-title" style="color:var(--brown-dark);">Bitácora<br><em style="font-style:italic;color:var(--brown-light);">del Parque Kombai</em></h2>
+    <p class="reveal section-intro">Salida pedagógica que se convirtió en la chispa creativa. Todo lo vivido, sentido y reflexionado, organizado en cuatro dimensiones.</p>
+
+    <div class="bitacora-grid">
+      <div class="reveal bit-card datos" data-letter="D">
+        <div class="bit-card-title">Datos</div>
+        <div class="bit-item">Acampamos en el Parque Kombai</div>
+        <div class="bit-item">Escalamos</div>
+        <div class="bit-item">Hicimos caminata ecológica</div>
+        <div class="bit-item">Competencia grupal</div>
+        <div class="bit-item">Comimos tamal</div>
+        <div class="bit-item">Realizamos actividades extremas</div>
+        <div class="bit-item">Habían dos perritos</div>
+      </div>
+      <div class="reveal reveal-delay-1 bit-card anec" data-letter="A">
+        <div class="bit-card-title">Anécdotas</div>
+        <div class="bit-item">Se nos desinfló el colchón</div>
+        <div class="bit-item">Se nos mojó el sleeping</div>
+        <div class="bit-item">Era una travesura ir al baño</div>
+        <div class="bit-item">Se nos enlodaron los tenis</div>
+        <div class="bit-item">Llovió la noche y parecía granizo</div>
+        <div class="bit-item">Se nos olvidaron los tenis</div>
+        <div class="bit-item">Monté por primera vez en tiroleza</div>
+        <div class="bit-item">Me tiré de una banana a 10 m de altura</div>
+      </div>
+      <div class="reveal reveal-delay-2 bit-card reflex" data-letter="R">
+        <div class="bit-card-title">Reflexiones</div>
+        <div class="bit-item">Valorar todas las comodidades que tenemos</div>
+        <div class="bit-item">Hay que tomar decisiones de vida o muerte</div>
+        <div class="bit-item">Hay que ser recursivos</div>
+        <div class="bit-item">Adaptarse a las distintas condiciones</div>
+        <div class="bit-item">Siempre ser positivo y empático</div>
+        <div class="bit-item">El trabajar en equipos lo es todo</div>
+        <div class="bit-item">La creatividad surge en los momentos menos esperados</div>
+      </div>
+      <div class="reveal reveal-delay-3 bit-card emos" data-letter="E">
+        <div class="bit-card-title">Emociones</div>
+        <div class="bit-item">Miedo</div>
+        <div class="bit-item">Alegría</div>
+        <div class="bit-item">Intriga</div>
+        <div class="bit-item">Adrenalina</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FASE 2 -->
+<section id="fase2">
+  <div class="container">
+    <div class="reveal phase-label">
+      <span class="phase-num" style="background:rgba(201,152,64,0.2);color:var(--gold);">2</span>
+      Organización de información
+    </div>
+    <h2 class="reveal section-title">Técnica<br><em style="font-style:italic;color:var(--gold);">B-DARE</em></h2>
+    <p class="reveal section-intro">De la experiencia vivida se extraen 3 palabras clave por cada dimensión — 12 palabras en total que serán el combustible creativo.</p>
+
+    <div class="bdare-grid">
+      <div class="reveal bdare-col d">
+        <div class="bdare-col-title">Datos</div>
+        <span class="word-chip-dark">Escalada</span>
+        <span class="word-chip-dark">Actividades extremas</span>
+        <span class="word-chip-dark">Tamal</span>
+      </div>
+      <div class="reveal reveal-delay-1 bdare-col a">
+        <div class="bdare-col-title">Anécdotas</div>
+        <span class="word-chip-dark">Colchón</span>
+        <span class="word-chip-dark">Barro</span>
+        <span class="word-chip-dark">Bicicleta</span>
+      </div>
+      <div class="reveal reveal-delay-2 bdare-col r">
+        <div class="bdare-col-title">Reflexiones</div>
+        <span class="word-chip-dark">Recursivos</span>
+        <span class="word-chip-dark">Equipos</span>
+        <span class="word-chip-dark">Creatividad</span>
+      </div>
+      <div class="reveal reveal-delay-3 bdare-col e">
+        <div class="bdare-col-title">Emociones</div>
+        <span class="word-chip-dark">Miedo</span>
+        <span class="word-chip-dark">Adrenalina</span>
+        <span class="word-chip-dark">Alegría</span>
+      </div>
+    </div>
+    <div class="reveal total-words">
+      <span>12</span>
+      palabras clave listas para la ideación
+    </div>
+  </div>
+</section>
+
+<!-- FASE 3 -->
+<section id="fase3">
+  <div class="container">
+    <div class="reveal phase-label" style="justify-content:center;">
+      <span class="phase-num" style="background:rgba(255,255,255,0.2);color:white;">3</span>
+      Definición del problema
+    </div>
+    <h2 class="reveal section-title">La<br><em>pregunta</em></h2>
+    <p class="reveal section-intro">Todo proceso creativo parte de una pregunta bien formulada. Esta es la nuestra.</p>
+    <div class="reveal problema-box">
+      <div class="problema-question">¿Cómo diseñar experiencias de aventura al aire libre accesibles para jóvenes urbanos que fortalezcan el <em>trabajo en equipo</em> y la <em>resiliencia</em>?</div>
+      <p class="problema-desc">Identificado a partir de la reflexión colectiva de la salida: los jóvenes urbanos tienen pocas oportunidades de conectarse con la naturaleza y de vivir experiencias que desarrollen habilidades socioemocionales. La salida al Parque Kombai evidenció cuánto valor tienen estas vivencias y qué tan difícil es acceder a ellas.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FASE 4 -->
+<section id="fase4">
+  <div class="container">
+    <div class="reveal phase-label" style="color:var(--terra);">
+      <span class="phase-num" style="background:var(--terra-pale);color:var(--terra);">4</span>
+      Generación de ideas
+    </div>
+    <h2 class="reveal section-title" style="color:var(--brown-dark);">Técnica<br><em style="color:var(--terra);">3P</em></h2>
+    <p class="reveal section-intro">Cada palabra se enlaza directamente con el problema para generar una propuesta creativa original.</p>
+
+    <div class="props-grid">
+      <div class="reveal prop-card">
+        <div class="prop-num">01</div>
+        <span class="prop-tag tag-d">Dato · Escalada</span>
+        <div class="prop-word">App de rutas</div>
+        <p class="prop-desc">Aplicación de escalada y senderismo urbano para jóvenes, con niveles de dificultad, comunidad activa y certificados de logro.</p>
+      </div>
+      <div class="reveal reveal-delay-1 prop-card">
+        <div class="prop-num">02</div>
+        <span class="prop-tag tag-d">Dato · Actividades extremas</span>
+        <div class="prop-word">Plataforma de instructores</div>
+        <p class="prop-desc">Conecta instructores certificados con colegios para jornadas de aventura seguras, económicas y con impacto socioemocional.</p>
+      </div>
+      <div class="reveal reveal-delay-2 prop-card">
+        <div class="prop-num">03</div>
+        <span class="prop-tag tag-d">Dato · Tamal</span>
+        <div class="prop-word">Kit de cocina campestre</div>
+        <p class="prop-desc">Recetas tradicionales colombianas para preparar colectivamente durante salidas pedagógicas, fortaleciendo identidad cultural y trabajo en equipo.</p>
+      </div>
+      <div class="reveal prop-card">
+        <div class="prop-num">04</div>
+        <span class="prop-tag tag-a">Anécdota · Colchón</span>
+        <div class="prop-word">Servicio de alquiler camping</div>
+        <p class="prop-desc">Kit completo (tienda, sleeping, colchoneta) a precios accesibles por día para grupos estudiantiles que quieran vivir la naturaleza sin inversión inicial.</p>
+      </div>
+      <div class="reveal reveal-delay-1 prop-card">
+        <div class="prop-num">05</div>
+        <span class="prop-tag tag-a">Anécdota · Barro</span>
+        <div class="prop-word">Taller de escultura en barro</div>
+        <p class="prop-desc">Actividad terapéutica y creativa en entornos naturales como herramienta de team building para grupos escolares y universitarios.</p>
+      </div>
+      <div class="reveal reveal-delay-2 prop-card">
+        <div class="prop-num">06</div>
+        <span class="prop-tag tag-a">Anécdota · Bicicleta</span>
+        <div class="prop-word">Cicloturismo para principiantes</div>
+        <p class="prop-desc">Circuito guiado en reservas naturales cercanas a la ciudad, diseñado especialmente para quienes montan bicicleta por primera vez.</p>
+      </div>
+      <div class="reveal prop-card">
+        <div class="prop-num">07</div>
+        <span class="prop-tag tag-r">Reflexión · Recursivos</span>
+        <div class="prop-word">Supervivencia urbana</div>
+        <p class="prop-desc">Programa presencial y virtual que enseña a resolver problemas cotidianos con recursos mínimos, desarrollando ingenio y autoconfianza.</p>
+      </div>
+      <div class="reveal reveal-delay-1 prop-card">
+        <div class="prop-num">08</div>
+        <span class="prop-tag tag-r">Reflexión · Equipos</span>
+        <div class="prop-word">Retos colaborativos gamificados</div>
+        <p class="prop-desc">Plataforma digital donde equipos compiten en desafíos al aire libre acumulando puntos y recompensas canjeables por experiencias.</p>
+      </div>
+      <div class="reveal reveal-delay-2 prop-card">
+        <div class="prop-num">09</div>
+        <span class="prop-tag tag-r">Reflexión · Creatividad</span>
+        <div class="prop-word">Residencias creativas</div>
+        <p class="prop-desc">Estancias en entornos naturales donde jóvenes desarrollan proyectos artísticos o emprendimientos inspirados en la biodiversidad local.</p>
+      </div>
+      <div class="reveal prop-card">
+        <div class="prop-num">10</div>
+        <span class="prop-tag tag-e">Emoción · Miedo</span>
+        <div class="prop-word">Gestión del miedo</div>
+        <p class="prop-desc">Exposición gradual a retos físicos (rappel, tirolesa, saltos) como herramienta de gestión emocional y construcción de autoconfianza.</p>
+      </div>
+      <div class="reveal reveal-delay-1 prop-card">
+        <div class="prop-num">11</div>
+        <span class="prop-tag tag-e">Emoción · Adrenalina</span>
+        <div class="prop-word">Detox digital + aventura</div>
+        <p class="prop-desc">Paquetes de fin de semana que combinan actividades extremas con desconexión tecnológica total, meditación y reflexión colectiva en la naturaleza.</p>
+      </div>
+      <div class="reveal reveal-delay-2 prop-card">
+        <div class="prop-num">12</div>
+        <span class="prop-tag tag-e">Emoción · Alegría</span>
+        <div class="prop-word">Festival de juegos tradicionales</div>
+        <p class="prop-desc">Festival itinerante al aire libre que recupera la lúdica colectiva y los juegos populares colombianos en entornos naturales.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FASE 5 -->
+<section id="fase5">
+  <div class="container">
+    <div class="reveal phase-label" style="color:var(--olive);">
+      <span class="phase-num" style="background:var(--olive-pale);color:var(--olive);">5</span>
+      Evaluación de ideas
+    </div>
+    <h2 class="reveal section-title">CUVA<em style="font-style:italic;color:var(--terra);">Free</em></h2>
+    <p class="reveal section-intro">Cada propuesta se evalúa bajo cuatro criterios con pesos diferenciados: Creatividad (40), Utilidad (20), Viabilidad (20), Aplicabilidad (20).</p>
+
+    <div class="reveal cuva-legend">
+      <div class="cuva-legend-item"><div class="legend-dot" style="background:var(--gold-pale);border:1px solid var(--gold);"></div> 1er lugar</div>
+      <div class="cuva-legend-item"><div class="legend-dot" style="background:var(--olive-pale);border:1px solid var(--olive-light);"></div> 2do lugar</div>
+    </div>
+
+    <div class="cuva-wrap reveal">
+      <table class="cuva">
+        <thead>
+          <tr>
+            <th>Propuesta</th>
+            <th>C /40</th>
+            <th>U /20</th>
+            <th>V /20</th>
+            <th>A /20</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>App de rutas de escalada</td><td>28</td><td>14</td><td>16</td><td>14</td><td>72</td></tr>
+          <tr><td>Plataforma de instructores para colegios</td><td>33</td><td>18</td><td>15</td><td>17</td><td>83</td></tr>
+          <tr><td>Kit de cocina campestre tradicional</td><td>22</td><td>14</td><td>18</td><td>18</td><td>72</td></tr>
+          <tr><td>Servicio de alquiler de kits camping</td><td>20</td><td>16</td><td>19</td><td>16</td><td>71</td></tr>
+          <tr><td>Taller de escultura en barro</td><td>35</td><td>13</td><td>12</td><td>13</td><td>73</td></tr>
+          <tr><td>Cicloturismo para principiantes</td><td>25</td><td>16</td><td>17</td><td>15</td><td>73</td></tr>
+          <tr><td>Programa de supervivencia urbana</td><td>30</td><td>18</td><td>14</td><td>15</td><td>77</td></tr>
+          <tr><td>Retos colaborativos gamificados</td><td>36</td><td>17</td><td>15</td><td>17</td><td>85</td></tr>
+          <tr class="runner"><td>Residencias creativas en naturaleza <span class="place-badge place-2">2°</span></td><td>38</td><td>15</td><td>13</td><td>14</td><td>80</td></tr>
+          <tr><td>Programa gestión del miedo</td><td>34</td><td>19</td><td>14</td><td>18</td><td>85</td></tr>
+          <tr class="winner"><td>Paquetes "Detox digital + aventura" <span class="place-badge place-1">1°</span></td><td>40</td><td>20</td><td>20</td><td>20</td><td>100</td></tr>
+          <tr><td>Festival de juegos tradicionales</td><td>26</td><td>15</td><td>19</td><td>13</td><td>73</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- FASE 6 -->
+<section id="fase6">
+  <div class="container">
+    <div class="reveal phase-label">
+      <span class="phase-num" style="background:rgba(255,255,255,0.15);color:white;">6</span>
+      Selección final
+    </div>
+    <h2 class="reveal section-title">Las ideas<br><em>ganadoras</em></h2>
+    <p class="reveal section-intro">Las dos propuestas con mayor puntaje y su combinación en una solución integral y robusta.</p>
+
+    <div class="ideas-grid">
+      <div class="reveal idea-card first">
+        <div class="idea-score">100</div>
+        <div class="idea-rank">Primera plaza · CUVA-Free</div>
+        <div class="idea-title">Paquetes "Detox Digital + Aventura"</div>
+        <p class="idea-desc">Experiencias de fin de semana que combinan actividades extremas (rappel, tirolesa, senderismo) con desconexión tecnológica total. Incluye guías certificados, campamento base, comidas tradicionales y talleres de reflexión. Modelo B2B dirigido a colegios, universidades y empresas.</p>
+      </div>
+      <div class="reveal reveal-delay-1 idea-card">
+        <div class="idea-score">80</div>
+        <div class="idea-rank">Segunda plaza · CUVA-Free</div>
+        <div class="idea-title">Residencias Creativas en la Naturaleza</div>
+        <p class="idea-desc">Estancias de varios días donde jóvenes desarrollan proyectos artísticos o emprendimientos inspirados en el entorno natural. Combina talleres creativos, mentorías y exposición final de resultados con impacto comunitario.</p>
+      </div>
+    </div>
+
+    <div class="reveal fusion-card">
+      <div class="fusion-icon">&#9728;&#65039;</div>
+      <div>
+        <div class="fusion-label">Propuesta fusionada</div>
+        <div class="fusion-title">Campamento Creativo con Aventura y Desconexión</div>
+        <p class="fusion-desc">Integrar ambas ideas en un modelo donde de día se viven actividades extremas y conexión con la naturaleza, y de noche se realizan talleres creativos y reflexión colectiva. Exactamente la esencia de lo que Paula vivió en el Parque Kombai — y que ahora se convierte en un modelo replicable para jóvenes urbanos de todo el país.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <strong>Método BIC — Banco de Ideas Creativas</strong><br>
+  Creado por Carolina Pinzón Hernández · Aplicado por Paula Andrea González<br>
+  Bitácora: Salida pedagógica Parque Kombai
+</footer>
+
+<script>
+const revealEls = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+revealEls.forEach(el => observer.observe(el));
+
+const navLinks = document.querySelectorAll('.nav-links a');
+const sections = document.querySelectorAll('section[id]');
+const navObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      navLinks.forEach(a => {
+        a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { threshold: 0.4 });
+sections.forEach(s => navObs.observe(s));
+</script>
+</body>
+</html>
